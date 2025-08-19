@@ -1,33 +1,14 @@
-<!DOCTYPE html>
-<html lang="vi">
-<head>
-  <meta charset="UTF-8">
-  <title>Theo dõi link</title>
-  <style>
-    table { border-collapse: collapse; width: 100%; margin-top: 20px; }
-    th, td { border: 1px solid #ccc; padding: 8px; text-align: left; }
-    textarea { width: 400px; height: 100px; }
-    input { margin: 5px 0; padding: 5px; width: 400px; }
-  </style>
-</head>
-<body>
-  <h2>Theo dõi link</h2>
-  <input type="email" id="email" placeholder="Nhập email nhận thông báo"><br>
-  <textarea id="urls" placeholder="Nhập mỗi link 1 dòng"></textarea><br>
-  <button onclick="addLinks()">Thêm link</button>
-
-  <table>
-    <thead>
-      <tr>
-        <th>URL</th>
-        <th>Email</th>
-        <th>Trạng thái</th>
-        <th>Lần kiểm tra gần nhất</th>
-        <th>Đang theo dõi</th>
-      </tr>
-    </thead>
-    <tbody id="statusTable"></tbody>
-  </table>
+<thead>
+  <tr>
+    <th>URL</th>
+    <th>Email</th>
+    <th>Trạng thái</th>
+    <th>Lần kiểm tra gần nhất</th>
+    <th>Đang theo dõi</th>
+    <th>Xóa</th> <!-- Thêm cột Xóa -->
+  </tr>
+</thead>
+<tbody id="statusTable"></tbody>
 
 <script>
 const API_URL = "https://check-end-coin-production.up.railway.app";
@@ -51,6 +32,17 @@ async function addLinks() {
   fetchStatus();
 }
 
+async function removeLink(url) {
+  if (!confirm(`Bạn có chắc muốn xoá link: ${url}?`)) return;
+
+  await fetch(API_URL + "/remove-link", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ url })
+  });
+  fetchStatus();
+}
+
 async function fetchStatus() {
   const res = await fetch(API_URL + "/status");
   const data = await res.json();
@@ -63,6 +55,7 @@ async function fetchStatus() {
       <td>${link.status}</td>
       <td>${link.lastChecked || ""}</td>
       <td>${link.active ? "✅" : "❌"}</td>
+      <td><button onclick="removeLink('${link.url}')">❌ Xóa</button></td>
     </tr>`;
     tbody.innerHTML += row;
   });
@@ -70,5 +63,3 @@ async function fetchStatus() {
 
 setInterval(fetchStatus, 5000);
 </script>
-</body>
-</html>

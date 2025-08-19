@@ -1,13 +1,34 @@
 <!DOCTYPE html>
 <html lang="vi">
+
 <head>
   <meta charset="UTF-8">
   <title>Theo dõi link</title>
   <style>
-    table { border-collapse: collapse; width: 100%; margin-top: 20px; }
-    th, td { border: 1px solid #ccc; padding: 8px; text-align: left; }
-    textarea { width: 400px; height: 100px; }
-    input { margin: 5px 0; padding: 5px; width: 400px; }
+    table {
+      border-collapse: collapse;
+      width: 100%;
+      margin-top: 20px;
+    }
+
+    th,
+    td {
+      border: 1px solid #ccc;
+      padding: 8px;
+      text-align: left;
+    }
+
+    textarea {
+      width: 400px;
+      height: 100px;
+    }
+
+    input {
+      margin: 5px 0;
+      padding: 5px;
+      width: 400px;
+    }
+
     button.remove-btn {
       background-color: #ff4d4f;
       color: white;
@@ -16,11 +37,13 @@
       cursor: pointer;
       border-radius: 4px;
     }
+
     button.remove-btn:hover {
       background-color: #d9363e;
     }
   </style>
 </head>
+
 <body>
   <h2>Theo dõi link</h2>
   <input type="email" id="email" placeholder="Nhập email nhận thông báo"><br>
@@ -41,59 +64,61 @@
     <tbody id="statusTable"></tbody>
   </table>
 
-<script>
-const API_URL = "https://check-end-coin-production.up.railway.app";
+  <script>
+    const API_URL = "https://check-end-coin-production.up.railway.app";
 
-async function addLinks() {
-  const email = document.getElementById('email').value.trim();
-  const urls = document.getElementById('urls').value
-    .split('\n')
-    .map(u => u.trim())
-    .filter(u => u);
+    async function addLinks() {
+      const email = document.getElementById('email').value.trim();
+      const urls = document.getElementById('urls').value
+        .split('\n')
+        .map(u => u.trim())
+        .filter(u => u);
 
-  if (!email) return alert("Vui lòng nhập email");
-  if (urls.length === 0) return alert("Vui lòng nhập ít nhất 1 link");
+      if (!email) return alert("Vui lòng nhập email");
+      if (urls.length === 0) return alert("Vui lòng nhập ít nhất 1 link");
 
-  await fetch(API_URL + "/add-links", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ email, urls })
-  });
-  document.getElementById('urls').value = "";
-  fetchStatus();
-}
+      await fetch(API_URL + "/add-links", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, urls })
+      });
+      document.getElementById('urls').value = "";
+      fetchStatus();
+    }
 
-async function removeLink(url) {
-  if (!confirm(`Bạn có chắc muốn xoá link: ${url}?`)) return;
+    async function removeLink(url) {
+      if (!confirm(`Bạn có chắc muốn xoá link: ${url}?`)) return;
 
-  await fetch(API_URL + "/remove-link", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ url })
-  });
-  fetchStatus();
-}
+      await fetch(API_URL + "/remove-link", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ url })
+      });
+      fetchStatus();
+    }
 
-async function fetchStatus() {
-  const res = await fetch(API_URL + "/status");
-  const data = await res.json();
-  const tbody = document.getElementById("statusTable");
-  tbody.innerHTML = "";
-  data.forEach(link => {
-    const row = `<tr>
+    async function fetchStatus() {
+      const res = await fetch(API_URL + "/status");
+      const data = await res.json();
+      const tbody = document.getElementById("statusTable");
+      tbody.innerHTML = "";
+      data.forEach(link => {
+        const row = `<tr>
       <td>${link.url}</td>
       <td>${link.email}</td>
+        <td>${link.coin}</td>
       <td>${link.status}</td>
       <td>${link.lastChecked || ""}</td>
       <td>${link.active ? "✅" : "❌"}</td>
       <td><button class="remove-btn" onclick="removeLink('${link.url}')">❌ Xóa</button></td>
     </tr>`;
-    tbody.innerHTML += row;
-  });
-}
+        tbody.innerHTML += row;
+      });
+    }
 
-setInterval(fetchStatus, 5000);
-fetchStatus(); // Load lần đầu
-</script>
+    setInterval(fetchStatus, 5000);
+    fetchStatus(); // Load lần đầu
+  </script>
 </body>
+
 </html>

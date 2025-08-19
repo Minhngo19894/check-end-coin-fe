@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <title>Theo dõi link</title>
+  <style>
+    table { border-collapse: collapse; width: 100%; margin-top: 20px; }
+    th, td { border: 1px solid #ccc; padding: 8px; text-align: left; }
+    textarea { width: 400px; height: 100px; }
+    input { margin: 5px 0; padding: 5px; width: 400px; }
+  </style>
+</head>
+<body>
+  <h2>Theo dõi link</h2>
+  <input type="email" id="email" placeholder="Nhập email nhận thông báo"><br>
+  <textarea id="urls" placeholder="Nhập mỗi link 1 dòng"></textarea><br>
+  <button onclick="addLinks()">Thêm link</button>
+
+  <table>
+    <thead>
+      <tr>
+        <th>URL</th>
+        <th>Email</th>
+        <th>Trạng thái</th>
+        <th>Lần kiểm tra gần nhất</th>
+        <th>Đang theo dõi</th>
+      </tr>
+    </thead>
+    <tbody id="statusTable"></tbody>
+  </table>
+
+<script>
+const API_URL = "https://check-end-coin-production.up.railway.app";
+
+async function addLinks() {
+  const email = document.getElementById('email').value.trim();
+  const urls = document.getElementById('urls').value
+    .split('\n')
+    .map(u => u.trim())
+    .filter(u => u);
+
+  if (!email) return alert("Vui lòng nhập email");
+  if (urls.length === 0) return alert("Vui lòng nhập ít nhất 1 link");
+
+  await fetch(API_URL + "/add-links", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ email, urls })
+  });
+  document.getElementById('urls').value = "";
+  fetchStatus();
+}
+
+async function fetchStatus() {
+  const res = await fetch(API_URL + "/status");
+  const data = await res.json();
+  const tbody = document.getElementById("statusTable");
+  tbody.innerHTML = "";
+  data.forEach(link => {
+    const row = `<tr>
+      <td>${link.url}</td>
+      <td>${link.email}</td>
+      <td>${link.status}</td>
+      <td>${link.lastChecked || ""}</td>
+      <td>${link.active ? "✅" : "❌"}</td>
+    </tr>`;
+    tbody.innerHTML += row;
+  });
+}
+
+setInterval(fetchStatus, 5000);
+</script>
+</body>
+</html>

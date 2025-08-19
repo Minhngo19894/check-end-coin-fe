@@ -1,14 +1,45 @@
-<thead>
-  <tr>
-    <th>URL</th>
-    <th>Email</th>
-    <th>Trạng thái</th>
-    <th>Lần kiểm tra gần nhất</th>
-    <th>Đang theo dõi</th>
-    <th>Xóa</th> <!-- Thêm cột Xóa -->
-  </tr>
-</thead>
-<tbody id="statusTable"></tbody>
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <title>Theo dõi link</title>
+  <style>
+    table { border-collapse: collapse; width: 100%; margin-top: 20px; }
+    th, td { border: 1px solid #ccc; padding: 8px; text-align: left; }
+    textarea { width: 400px; height: 100px; }
+    input { margin: 5px 0; padding: 5px; width: 400px; }
+    button.remove-btn {
+      background-color: #ff4d4f;
+      color: white;
+      border: none;
+      padding: 4px 8px;
+      cursor: pointer;
+      border-radius: 4px;
+    }
+    button.remove-btn:hover {
+      background-color: #d9363e;
+    }
+  </style>
+</head>
+<body>
+  <h2>Theo dõi link</h2>
+  <input type="email" id="email" placeholder="Nhập email nhận thông báo"><br>
+  <textarea id="urls" placeholder="Nhập mỗi link 1 dòng"></textarea><br>
+  <button onclick="addLinks()">Thêm link</button>
+
+  <table>
+    <thead>
+      <tr>
+        <th>URL</th>
+        <th>Email</th>
+        <th>Trạng thái</th>
+        <th>Lần kiểm tra gần nhất</th>
+        <th>Đang theo dõi</th>
+        <th>Xóa</th>
+      </tr>
+    </thead>
+    <tbody id="statusTable"></tbody>
+  </table>
 
 <script>
 const API_URL = "https://check-end-coin-production.up.railway.app";
@@ -55,11 +86,14 @@ async function fetchStatus() {
       <td>${link.status}</td>
       <td>${link.lastChecked || ""}</td>
       <td>${link.active ? "✅" : "❌"}</td>
-      <td><button onclick="removeLink('${link.url}')">❌ Xóa</button></td>
+      <td><button class="remove-btn" onclick="removeLink('${link.url}')">❌ Xóa</button></td>
     </tr>`;
     tbody.innerHTML += row;
   });
 }
 
 setInterval(fetchStatus, 5000);
+fetchStatus(); // Load lần đầu
 </script>
+</body>
+</html>

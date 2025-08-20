@@ -41,6 +41,24 @@
     button.remove-btn:hover {
       background-color: #d9363e;
     }
+
+    button.add-email-btn {
+      background-color: #4caf50;
+      color: white;
+      border: none;
+      padding: 2px 6px;
+      cursor: pointer;
+      border-radius: 4px;
+      margin-top: 2px;
+    }
+
+    button.add-email-btn:hover {
+      background-color: #3e8e41;
+    }
+
+    td > div {
+      margin-bottom: 2px;
+    }
   </style>
 </head>
 
@@ -66,7 +84,8 @@
   </table>
 
   <script>
-    const API_URL = "https://check-end-coin-production.up.railway.app";
+    // const API_URL = "https://check-end-coin-production.up.railway.app";
+    const API_URL = 'http://localhost:3000'
 
     async function addLinks() {
       const email = document.getElementById('email').value.trim();
@@ -78,10 +97,13 @@
       if (!email) return alert("Vui lòng nhập email");
       if (urls.length === 0) return alert("Vui lòng nhập ít nhất 1 link");
 
+      // Gửi mỗi URL kèm email
+      const payload = urls.map(u => ({ url: u, emails: [email] }));
+
       await fetch(API_URL + "/add-links", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, urls })
+        body: JSON.stringify({ urls: payload })
       });
       document.getElementById('urls').value = "";
       fetchStatus();
@@ -98,6 +120,28 @@
       fetchStatus();
     }
 
+    async function promptAddEmail(url) {
+      const email = prompt("Nhập email mới cho URL này:");
+      if (!email) return;
+
+      try {
+        const res = await fetch(API_URL + "/add-email", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ url, email })
+        });
+        const data = await res.json();
+        if (res.ok) {
+          alert(`Đã thêm email: ${email}`);
+          fetchStatus();
+        } else {
+          alert(data.error || "Lỗi thêm email");
+        }
+      } catch (err) {
+        alert("Lỗi thêm email: " + err.message);
+      }
+    }
+
     async function fetchStatus() {
       const res = await fetch(API_URL + "/status");
       const data = await res.json();
@@ -105,14 +149,17 @@
       tbody.innerHTML = "";
       data.forEach(link => {
         const row = `<tr>
-      <td>${link.url}</td>
-      <td>${link.email}</td>
-        <td>${link.coin}</td>
-      <td>${link.status}</td>
-      <td>${new Date(new Date(link.lastChecked).getTime() + 7 * 60 * 60 * 1000).toLocaleString('vi-VN') || ""}</td>
-      <td>${link.active ? "✅" : "❌"}</td>
-      <td><button class="remove-btn" onclick="removeLink('${link.url}')">❌ Xóa</button></td>
-    </tr>`;
+          <td>${link.url}</td>
+          <td>
+            ${link.emails.map(e => `<div>${e}</div>`).join("")}
+            <button class="add-email-btn" onclick="promptAddEmail('${link.url}')">➕ Thêm email</button>
+          </td>
+          <td>${link.coin || ""}</td>
+          <td>${link.status || ""}</td>
+          <td>${link.lastChecked ? new Date(new Date(link.lastChecked).getTime() + 7 * 60 * 60 * 1000).toLocaleString('vi-VN') : ""}</td>
+          <td>${link.active ? "✅" : "❌"}</td>
+          <td><button class="remove-btn" onclick="removeLink('${link.url}')">❌ Xóa</button></td>
+        </tr>`;
         tbody.innerHTML += row;
       });
     }

@@ -1,57 +1,45 @@
 <!DOCTYPE html>
-<html lang="vi" class="dark">
+<html lang="vi">
 <head>
   <meta charset="UTF-8">
   <title>Theo dõi link</title>
   <script src="https://cdn.tailwindcss.com"></script>
-  <script src="https://unpkg.com/lucide-static"></script>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
   <style>
     body { font-family: 'Inter', sans-serif; }
-    .fade-in { animation: fadeIn 0.5s ease-in-out; }
-    @keyframes fadeIn {
-      from { opacity: 0; transform: translateY(5px); }
-      to { opacity: 1; transform: translateY(0); }
-    }
   </style>
 </head>
-<body class="bg-gradient-to-br from-gray-900 via-gray-800 to-black text-gray-100 min-h-screen transition-colors duration-500">
-
-  <div class="max-w-6xl mx-auto p-6">
-    <!-- Header -->
-    <div class="flex items-center justify-between mb-6">
-      <h1 class="text-2xl font-bold">📡 Theo dõi link</h1>
-      <button id="themeToggle" class="px-3 py-1 rounded-lg bg-gray-700 hover:bg-gray-600 transition flex items-center gap-2">
-        <i data-lucide="sun" class="w-5 h-5 hidden dark:block"></i>
-        <i data-lucide="moon" class="w-5 h-5 block dark:hidden"></i>
-        <span>Đổi theme</span>
-      </button>
-    </div>
-
-    <!-- Input form -->
-    <div class="bg-gray-800/60 dark:bg-gray-900/70 p-6 rounded-xl shadow-lg space-y-4 mb-6">
-      <input id="email" type="email" placeholder="Nhập email nhận thông báo" 
-             class="w-full p-3 rounded-lg border border-gray-600 bg-gray-900 text-gray-100 placeholder-gray-400 focus:ring-2 focus:ring-indigo-500">
-      <textarea id="urls" placeholder="Nhập mỗi link 1 dòng" 
-                class="w-full h-28 p-3 rounded-lg border border-gray-600 bg-gray-900 text-gray-100 placeholder-gray-400 focus:ring-2 focus:ring-indigo-500"></textarea>
-      <button onclick="addLinks()" 
-              class="px-5 py-2 bg-indigo-600 hover:bg-indigo-500 rounded-lg shadow flex items-center gap-2 transition text-white font-medium">
-        <i data-lucide="plus-circle" class="w-5 h-5"></i> Thêm link
+<body class="bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 min-h-screen text-gray-100 p-6">
+  <div class="max-w-6xl mx-auto">
+    <h2 class="text-3xl font-bold mb-6 text-center text-blue-400">📊 Theo dõi Link Coin</h2>
+    
+    <!-- Input -->
+    <div class="bg-gray-800 rounded-2xl shadow-lg p-6 mb-6">
+      <input type="email" id="email" placeholder="Nhập email nhận thông báo"
+        class="w-full mb-4 p-3 rounded-lg bg-gray-900 border border-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500">
+      <textarea id="urls" placeholder="Nhập mỗi link 1 dòng"
+        class="w-full h-32 p-3 rounded-lg bg-gray-900 border border-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500"></textarea>
+      <button onclick="addLinks()"
+        class="mt-4 px-5 py-3 bg-blue-600 hover:bg-blue-500 rounded-xl shadow-lg flex items-center gap-2 transition">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+        </svg>
+        <span class="font-semibold">Thêm link</span>
       </button>
     </div>
 
     <!-- Table -->
-    <div class="overflow-x-auto rounded-xl shadow-lg">
-      <table class="w-full border-collapse text-sm">
-        <thead class="bg-gray-700/60">
+    <div class="bg-gray-800 rounded-2xl shadow-lg overflow-hidden">
+      <table class="w-full text-left border-collapse">
+        <thead class="bg-gray-700 text-gray-300">
           <tr>
-            <th class="px-4 py-3 text-left">URL</th>
-            <th class="px-4 py-3 text-left">Email</th>
-            <th class="px-4 py-3">Coin</th>
-            <th class="px-4 py-3">Trạng thái</th>
-            <th class="px-4 py-3">Lần kiểm tra</th>
-            <th class="px-4 py-3">Đang theo dõi</th>
-            <th class="px-4 py-3">Xóa</th>
+            <th class="p-4">URL</th>
+            <th class="p-4">Email</th>
+            <th class="p-4">Coin</th>
+            <th class="p-4">Trạng thái</th>
+            <th class="p-4">Lần kiểm tra</th>
+            <th class="p-4">Đang theo dõi</th>
+            <th class="p-4">Xóa</th>
           </tr>
         </thead>
         <tbody id="statusTable" class="divide-y divide-gray-700"></tbody>
@@ -59,79 +47,74 @@
     </div>
   </div>
 
-  <script>
-    const API_URL = 'https://check-end-coin-production.up.railway.app'
+<script>
+const API_URL = 'https://check-end-coin-production.up.railway.app'
 
-    async function addLinks(){
-      const email = document.getElementById('email').value.trim();
-      const urls = document.getElementById('urls').value.split('\n').map(u=>u.trim()).filter(u=>u);
-      if(!email) return alert("Nhập email");
-      if(urls.length===0) return alert("Nhập ít nhất 1 link");
+async function addLinks(){
+  const email = document.getElementById('email').value.trim();
+  const urls = document.getElementById('urls').value.split('\n').map(u=>u.trim()).filter(u=>u);
+  if(!email) return alert("Nhập email");
+  if(urls.length===0) return alert("Nhập ít nhất 1 link");
 
-      const payload = urls.map(u=>({url:u, emails:[email]}));
-      await fetch(API_URL+"/add-links",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({urls:payload})});
-      document.getElementById('urls').value="";
-      fetchStatus();
-    }
+  const payload = urls.map(u=>({url:u, emails:[email]}));
+  await fetch(API_URL+"/add-links",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({urls:payload})});
+  document.getElementById('urls').value="";
+  fetchStatus();
+}
 
-    async function removeLink(url){
-      if(!confirm(`Xóa link ${url}?`)) return;
-      await fetch(API_URL+"/remove-link",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({url})});
-      fetchStatus();
-    }
+async function removeLink(url){
+  if(!confirm(`Xóa link ${url}?`)) return;
+  await fetch(API_URL+"/remove-link",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({url})});
+  fetchStatus();
+}
 
-    async function promptAddEmail(url){
-      const email = prompt("Nhập email mới:");
-      if(!email) return;
-      await fetch(API_URL+"/add-email",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({url,email})});
-      fetchStatus();
-    }
+async function promptAddEmail(url){
+  const email = prompt("Nhập email mới:");
+  if(!email) return;
+  await fetch(API_URL+"/add-email",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({url,email})});
+  fetchStatus();
+}
 
-    function getStatusBadge(status) {
-      switch(status) {
-        case "Đang diễn ra": return `<span class="px-2 py-1 rounded-lg bg-green-600/80 text-white text-xs">🟢 ${status}</span>`;
-        case "Đã kết thúc": return `<span class="px-2 py-1 rounded-lg bg-red-600/80 text-white text-xs">🔴 ${status}</span>`;
-        case "Đang tính toán": return `<span class="px-2 py-1 rounded-lg bg-yellow-500/80 text-black text-xs">🟡 ${status}</span>`;
-        case "Không lấy được": return `<span class="px-2 py-1 rounded-lg bg-gray-500/80 text-white text-xs">⚠️ ${status}</span>`;
-        default: return status || "";
-      }
-    }
-
-    async function fetchStatus(){
-      try{
-        const res = await fetch(API_URL+"/status");
-        const data = await res.json();
-        const tbody = document.getElementById("statusTable");
-        tbody.innerHTML = "";
-        data.forEach(link=>{
-          const row = `<tr class="fade-in">
-  <td class="px-4 py-3 break-all">${link.url}</td>
-  <td class="px-4 py-3">${link.emails.map(e=>`<div class="flex items-center justify-between">${e} <button class="text-green-400 hover:text-green-300" onclick="promptAddEmail('${link.url}')"><i data-lucide='plus-circle' class='w-4 h-4'></i></button></div>`).join("")}</td>
-  <td class="px-4 py-3 text-center">${link.coin||""}</td>
-  <td class="px-4 py-3 text-center">${getStatusBadge(link.status)}</td>
-  <td class="px-4 py-3 text-center">${link.lastChecked? new Date(new Date(link.lastChecked).getTime() + 7 * 60 * 60 * 1000).toLocaleString('vi-VN'):""}</td>
-  <td class="px-4 py-3 text-center">${link.active?"✅":"❌"}</td>
-  <td class="px-4 py-3 text-center"><button class="text-red-400 hover:text-red-300" onclick="removeLink('${link.url}')"><i data-lucide='trash-2' class='w-5 h-5'></i></button></td>
+async function fetchStatus(){
+  try{
+    const res = await fetch(API_URL+"/status");
+    const data = await res.json();
+    const tbody = document.getElementById("statusTable");
+    tbody.innerHTML = "";
+    data.forEach(link=>{
+      const row = `
+<tr class="hover:bg-gray-700/40 transition">
+  <td class="p-4">${link.url}</td>
+  <td class="p-4">
+    ${link.emails.map(e=>`<div class="flex items-center gap-2"><span>${e}</span></div>`).join("")}
+    <button class="mt-1 px-2 py-1 bg-green-600 hover:bg-green-500 rounded flex items-center gap-1 text-sm" onclick="promptAddEmail('${link.url}')">
+      <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+      </svg> Thêm
+    </button>
+  </td>
+  <td class="p-4">${link.coin||""}</td>
+  <td class="p-4">${link.status||""}</td>
+  <td class="p-4">${link.lastChecked? new Date(new Date(link.lastChecked).getTime() + 7 * 60 * 60 * 1000).toLocaleString('vi-VN'):""}</td>
+  <td class="p-4">${link.active? 
+      `<span class="flex items-center gap-1 text-green-400 font-semibold"><svg xmlns='http://www.w3.org/2000/svg' class='h-5 w-5' fill='none' viewBox='0 0 24 24' stroke='currentColor'><path stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M5 13l4 4L19 7'/></svg> Hoạt động</span>` :
+      `<span class="flex items-center gap-1 text-red-400 font-semibold"><svg xmlns='http://www.w3.org/2000/svg' class='h-5 w-5' fill='none' viewBox='0 0 24 24' stroke='currentColor'><path stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M6 18L18 6M6 6l12 12'/></svg> Ngừng</span>`}
+  </td>
+  <td class="p-4">
+    <button class="px-3 py-1 bg-red-600 hover:bg-red-500 rounded flex items-center gap-1" onclick="removeLink('${link.url}')">
+      <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+      </svg> Xóa
+    </button>
+  </td>
 </tr>`;
-          tbody.innerHTML+=row;
-        });
-        lucide.createIcons();
-      }catch(e){console.error(e);}
-    }
-
-    setInterval(fetchStatus,5000);
-    fetchStatus();
-
-    // Theme toggle
-    const themeToggle = document.getElementById("themeToggle");
-    themeToggle.addEventListener("click", () => {
-      document.documentElement.classList.toggle("dark");
-      localStorage.setItem("theme", document.documentElement.classList.contains("dark") ? "dark" : "light");
+      tbody.innerHTML+=row;
     });
-    if(localStorage.getItem("theme")==="light"){
-      document.documentElement.classList.remove("dark");
-    }
-    lucide.createIcons();
-  </script>
+  }catch(e){console.error(e);}
+}
+
+setInterval(fetchStatus,5000);
+fetchStatus();
+</script>
 </body>
 </html>

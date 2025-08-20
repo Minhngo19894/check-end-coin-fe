@@ -1,32 +1,64 @@
 <!DOCTYPE html>
 <html lang="vi">
 <head>
-<meta charset="UTF-8">
-<title>Theo dõi link</title>
-<style>
-table {border-collapse: collapse; width: 100%; margin-top: 20px;}
-th, td {border: 1px solid #ccc; padding: 8px; text-align: left;}
-textarea {width:400px;height:100px;}
-input {margin:5px 0; padding:5px; width:400px;}
-button.remove-btn{background:#f44;color:#fff;border:none;padding:4px 8px;cursor:pointer;border-radius:4px;}
-button.add-email-btn{background:#4caf50;color:#fff;border:none;padding:2px 6px;cursor:pointer;border-radius:4px;margin-top:2px;}
-td>div{margin-bottom:2px;}
-</style>
+  <meta charset="UTF-8">
+  <title>Theo dõi link</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    // Bật dark mode theo class
+    tailwind.config = {
+      darkMode: 'class'
+    }
+  </script>
 </head>
-<body>
-<h2>Theo dõi link</h2>
-<input type="email" id="email" placeholder="Nhập email nhận thông báo"><br>
-<textarea id="urls" placeholder="Nhập mỗi link 1 dòng"></textarea><br>
-<button onclick="addLinks()">Thêm link</button>
-<table>
-<thead><tr>
-<th>URL</th><th>Email</th><th>Coin</th><th>Trạng thái</th><th>Lần kiểm tra</th><th>Đang theo dõi</th><th>Xóa</th>
-</tr></thead>
-<tbody id="statusTable"></tbody>
-</table>
+<body class="bg-gray-100 dark:bg-gray-900 text-gray-800 dark:text-gray-200 transition-colors duration-300">
+  <div class="max-w-6xl mx-auto p-6">
+    <div class="flex justify-between items-center mb-4">
+      <h1 class="text-2xl font-bold text-indigo-600 dark:text-indigo-400">📌 Theo dõi link</h1>
+      <!-- Nút Dark/Light -->
+      <button id="toggleDark" 
+        class="px-4 py-2 bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200 rounded-lg shadow hover:bg-gray-300 dark:hover:bg-gray-600 transition">
+        🌙 Dark
+      </button>
+    </div>
+
+    <div class="bg-white dark:bg-gray-800 shadow-lg rounded-2xl p-6">
+      <!-- Input -->
+      <div class="space-y-3 mb-6">
+        <input type="email" id="email" placeholder="Nhập email nhận thông báo"
+          class="w-full border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:bg-gray-900 dark:border-gray-600" />
+        <textarea id="urls" placeholder="Nhập mỗi link 1 dòng"
+          class="w-full border rounded-lg px-3 py-2 h-24 focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:bg-gray-900 dark:border-gray-600"></textarea>
+        <button onclick="addLinks()"
+          class="w-full bg-indigo-600 text-white py-2 px-4 rounded-lg hover:bg-indigo-700 transition">
+          ➕ Thêm link
+        </button>
+      </div>
+
+      <!-- Table -->
+      <div class="overflow-x-auto">
+        <table class="w-full border-collapse rounded-lg overflow-hidden">
+          <thead>
+            <tr class="bg-indigo-600 text-white">
+              <th class="px-4 py-3 text-left">URL</th>
+              <th class="px-4 py-3 text-left">Email</th>
+              <th class="px-4 py-3 text-left">Coin</th>
+              <th class="px-4 py-3 text-left">Trạng thái</th>
+              <th class="px-4 py-3 text-left">Lần kiểm tra</th>
+              <th class="px-4 py-3 text-left">Theo dõi</th>
+              <th class="px-4 py-3 text-left">Xóa</th>
+            </tr>
+          </thead>
+          <tbody id="statusTable" class="divide-y divide-gray-200 dark:divide-gray-700 bg-white dark:bg-gray-800"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
 <script>
 const API_URL = 'https://check-end-coin-production.up.railway.app'
 
+// --- Giữ nguyên toàn bộ code JS cũ ---
 async function addLinks(){
   const email = document.getElementById('email').value.trim();
   const urls = document.getElementById('urls').value.split('\n').map(u=>u.trim()).filter(u=>u);
@@ -59,14 +91,19 @@ async function fetchStatus(){
     const tbody = document.getElementById("statusTable");
     tbody.innerHTML = "";
     data.forEach(link=>{
-      const row = `<tr>
-<td>${link.url}</td>
-<td>${link.emails.map(e=>`<div>${e}</div>`).join("")}<button class="add-email-btn" onclick="promptAddEmail('${link.url}')">➕</button></td>
-<td>${link.coin||""}</td>
-<td>${link.status||""}</td>
-<td>${link.lastChecked? new Date(new Date(link.lastChecked).getTime() + 7 * 60 * 60 * 1000).toLocaleString('vi-VN'):""}</td>
-<td>${link.active?"✅":"❌"}</td>
-<td><button class="remove-btn" onclick="removeLink('${link.url}')">❌</button></td>
+      const row = `<tr class="hover:bg-gray-50 dark:hover:bg-gray-700">
+<td class="px-4 py-2">${link.url}</td>
+<td class="px-4 py-2">
+  ${link.emails.map(e=>`<div class="text-sm">${e}</div>`).join("")}
+  <button class="mt-2 text-xs bg-green-500 text-white px-2 py-1 rounded hover:bg-green-600" onclick="promptAddEmail('${link.url}')">Thêm ➕</button>
+</td>
+<td class="px-4 py-2">${link.coin||""}</td>
+<td class="px-4 py-2">${link.status||""}</td>
+<td class="px-4 py-2">${link.lastChecked? new Date(new Date(link.lastChecked).getTime() + 7*60*60*1000).toLocaleString('vi-VN'):""}</td>
+<td class="px-4 py-2">${link.active?"<span class='text-green-600 font-bold'>✅</span>":"<span class='text-red-600 font-bold'>❌</span>"}</td>
+<td class="px-4 py-2">
+  <button class="bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600" onclick="removeLink('${link.url}')">Xóa</button>
+</td>
 </tr>`;
       tbody.innerHTML+=row;
     });
@@ -75,6 +112,13 @@ async function fetchStatus(){
 
 setInterval(fetchStatus,5000);
 fetchStatus();
+
+// Dark Mode toggle
+const toggleBtn = document.getElementById("toggleDark");
+toggleBtn.addEventListener("click",()=>{
+  document.documentElement.classList.toggle("dark");
+  toggleBtn.textContent = document.documentElement.classList.contains("dark") ? "☀️ Light" : "🌙 Dark";
+});
 </script>
 </body>
 </html>

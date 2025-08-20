@@ -64,7 +64,7 @@ async function fetchStatus(){
 <td>${link.emails.map(e=>`<div>${e}</div>`).join("")}<button class="add-email-btn" onclick="promptAddEmail('${link.url}')">➕</button></td>
 <td>${link.coin||""}</td>
 <td>${link.status||""}</td>
-<td>${link.lastChecked?new Date(link.lastChecked).toLocaleString('vi-VN'):""}</td>
+<td>${link.lastChecked? new Date(new Date(link.lastChecked).getTime() + 7 * 60 * 60 * 1000).toLocaleString('vi-VN'):""}</td>
 <td>${link.active?"✅":"❌"}</td>
 <td><button class="remove-btn" onclick="removeLink('${link.url}')">❌</button></td>
 </tr>`;

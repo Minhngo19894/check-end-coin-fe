@@ -1,172 +1,80 @@
 <!DOCTYPE html>
 <html lang="vi">
-
 <head>
-  <meta charset="UTF-8">
-  <title>Theo dõi link</title>
-  <style>
-    table {
-      border-collapse: collapse;
-      width: 100%;
-      margin-top: 20px;
-    }
-
-    th,
-    td {
-      border: 1px solid #ccc;
-      padding: 8px;
-      text-align: left;
-    }
-
-    textarea {
-      width: 400px;
-      height: 100px;
-    }
-
-    input {
-      margin: 5px 0;
-      padding: 5px;
-      width: 400px;
-    }
-
-    button.remove-btn {
-      background-color: #ff4d4f;
-      color: white;
-      border: none;
-      padding: 4px 8px;
-      cursor: pointer;
-      border-radius: 4px;
-    }
-
-    button.remove-btn:hover {
-      background-color: #d9363e;
-    }
-
-    button.add-email-btn {
-      background-color: #4caf50;
-      color: white;
-      border: none;
-      padding: 2px 6px;
-      cursor: pointer;
-      border-radius: 4px;
-      margin-top: 2px;
-    }
-
-    button.add-email-btn:hover {
-      background-color: #3e8e41;
-    }
-
-    td > div {
-      margin-bottom: 2px;
-    }
-  </style>
+<meta charset="UTF-8">
+<title>Theo dõi link</title>
+<style>
+table {border-collapse: collapse; width: 100%; margin-top: 20px;}
+th, td {border: 1px solid #ccc; padding: 8px; text-align: left;}
+textarea {width:400px;height:100px;}
+input {margin:5px 0; padding:5px; width:400px;}
+button.remove-btn{background:#f44;color:#fff;border:none;padding:4px 8px;cursor:pointer;border-radius:4px;}
+button.add-email-btn{background:#4caf50;color:#fff;border:none;padding:2px 6px;cursor:pointer;border-radius:4px;margin-top:2px;}
+td>div{margin-bottom:2px;}
+</style>
 </head>
-
 <body>
-  <h2>Theo dõi link</h2>
-  <input type="email" id="email" placeholder="Nhập email nhận thông báo"><br>
-  <textarea id="urls" placeholder="Nhập mỗi link 1 dòng"></textarea><br>
-  <button onclick="addLinks()">Thêm link</button>
+<h2>Theo dõi link</h2>
+<input type="email" id="email" placeholder="Nhập email nhận thông báo"><br>
+<textarea id="urls" placeholder="Nhập mỗi link 1 dòng"></textarea><br>
+<button onclick="addLinks()">Thêm link</button>
+<table>
+<thead><tr>
+<th>URL</th><th>Email</th><th>Coin</th><th>Trạng thái</th><th>Lần kiểm tra</th><th>Đang theo dõi</th><th>Xóa</th>
+</tr></thead>
+<tbody id="statusTable"></tbody>
+</table>
+<script>
+const API_URL = 'https://check-end-coin-production.up.railway.app'
 
-  <table>
-    <thead>
-      <tr>
-        <th>URL</th>
-        <th>Email</th>
-        <th>Coin</th>
-        <th>Trạng thái</th>
-        <th>Lần kiểm tra gần nhất</th>
-        <th>Đang theo dõi</th>
-        <th>Xóa</th>
-      </tr>
-    </thead>
-    <tbody id="statusTable"></tbody>
-  </table>
+async function addLinks(){
+  const email = document.getElementById('email').value.trim();
+  const urls = document.getElementById('urls').value.split('\n').map(u=>u.trim()).filter(u=>u);
+  if(!email) return alert("Nhập email");
+  if(urls.length===0) return alert("Nhập ít nhất 1 link");
 
-  <script>
-    const API_URL = "https://check-end-coin-production.up.railway.app";
-    // const API_URL = 'http://localhost:3000'
+  const payload = urls.map(u=>({url:u, emails:[email]}));
+  await fetch(API_URL+"/add-links",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({urls:payload})});
+  document.getElementById('urls').value="";
+  fetchStatus();
+}
 
-    async function addLinks() {
-      const email = document.getElementById('email').value.trim();
-      const urls = document.getElementById('urls').value
-        .split('\n')
-        .map(u => u.trim())
-        .filter(u => u);
+async function removeLink(url){
+  if(!confirm(`Xóa link ${url}?`)) return;
+  await fetch(API_URL+"/remove-link",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({url})});
+  fetchStatus();
+}
 
-      if (!email) return alert("Vui lòng nhập email");
-      if (urls.length === 0) return alert("Vui lòng nhập ít nhất 1 link");
+async function promptAddEmail(url){
+  const email = prompt("Nhập email mới:");
+  if(!email) return;
+  await fetch(API_URL+"/add-email",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({url,email})});
+  fetchStatus();
+}
 
-      // Gửi mỗi URL kèm email
-      const payload = urls.map(u => ({ url: u, emails: [email] }));
+async function fetchStatus(){
+  try{
+    const res = await fetch(API_URL+"/status");
+    const data = await res.json();
+    const tbody = document.getElementById("statusTable");
+    tbody.innerHTML = "";
+    data.forEach(link=>{
+      const row = `<tr>
+<td>${link.url}</td>
+<td>${link.emails.map(e=>`<div>${e}</div>`).join("")}<button class="add-email-btn" onclick="promptAddEmail('${link.url}')">➕</button></td>
+<td>${link.coin||""}</td>
+<td>${link.status||""}</td>
+<td>${link.lastChecked?new Date(link.lastChecked).toLocaleString('vi-VN'):""}</td>
+<td>${link.active?"✅":"❌"}</td>
+<td><button class="remove-btn" onclick="removeLink('${link.url}')">❌</button></td>
+</tr>`;
+      tbody.innerHTML+=row;
+    });
+  }catch(e){console.error(e);}
+}
 
-      await fetch(API_URL + "/add-links", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ urls: payload })
-      });
-      document.getElementById('urls').value = "";
-      fetchStatus();
-    }
-
-    async function removeLink(url) {
-      if (!confirm(`Bạn có chắc muốn xoá link: ${url}?`)) return;
-
-      await fetch(API_URL + "/remove-link", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ url })
-      });
-      fetchStatus();
-    }
-
-    async function promptAddEmail(url) {
-      const email = prompt("Nhập email mới cho URL này:");
-      if (!email) return;
-
-      try {
-        const res = await fetch(API_URL + "/add-email", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ url, email })
-        });
-        const data = await res.json();
-        if (res.ok) {
-          alert(`Đã thêm email: ${email}`);
-          fetchStatus();
-        } else {
-          alert(data.error || "Lỗi thêm email");
-        }
-      } catch (err) {
-        alert("Lỗi thêm email: " + err.message);
-      }
-    }
-
-    async function fetchStatus() {
-      const res = await fetch(API_URL + "/status");
-      const data = await res.json();
-      const tbody = document.getElementById("statusTable");
-      tbody.innerHTML = "";
-      data.forEach(link => {
-        const row = `<tr>
-          <td>${link.url}</td>
-          <td>
-            ${link.emails.map(e => `<div>${e}</div>`).join("")}
-            <button class="add-email-btn" onclick="promptAddEmail('${link.url}')">➕ Thêm email</button>
-          </td>
-          <td>${link.coin || ""}</td>
-          <td>${link.status || ""}</td>
-          <td>${link.lastChecked ? new Date(new Date(link.lastChecked).getTime() + 7 * 60 * 60 * 1000).toLocaleString('vi-VN') : ""}</td>
-          <td>${link.active ? "✅" : "❌"}</td>
-          <td><button class="remove-btn" onclick="removeLink('${link.url}')">❌ Xóa</button></td>
-        </tr>`;
-        tbody.innerHTML += row;
-      });
-    }
-
-    setInterval(fetchStatus, 5000);
-    fetchStatus(); // Load lần đầu
-  </script>
+setInterval(fetchStatus,5000);
+fetchStatus();
+</script>
 </body>
-
 </html>

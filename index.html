@@ -1,54 +1,69 @@
 <!DOCTYPE html>
-<html lang="vi">
+<html lang="vi" class="dark">
 <head>
   <meta charset="UTF-8">
   <title>Theo dõi link</title>
   <script src="https://cdn.tailwindcss.com"></script>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
-  <style>
-    body { font-family: 'Inter', sans-serif; }
-  </style>
 </head>
-<body class="bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 min-h-screen text-gray-100 p-6">
-  <div class="max-w-6xl mx-auto">
-    <h2 class="text-3xl font-bold mb-6 text-center text-blue-400">📊 Theo dõi Link Coin</h2>
-    
-    <!-- Input -->
-    <div class="bg-gray-800 rounded-2xl shadow-lg p-6 mb-6">
-      <input type="email" id="email" placeholder="Nhập email nhận thông báo"
-        class="w-full mb-4 p-3 rounded-lg bg-gray-900 border border-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500">
-      <textarea id="urls" placeholder="Nhập mỗi link 1 dòng"
-        class="w-full h-32 p-3 rounded-lg bg-gray-900 border border-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500"></textarea>
-      <button onclick="addLinks()"
-        class="mt-4 px-5 py-3 bg-blue-600 hover:bg-blue-500 rounded-xl shadow-lg flex items-center gap-2 transition">
-        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
-        </svg>
-        <span class="font-semibold">Thêm link</span>
-      </button>
-    </div>
+<body class="bg-gray-100 dark:bg-gray-900 text-gray-900 dark:text-gray-100 min-h-screen p-6">
 
-    <!-- Table -->
-    <div class="bg-gray-800 rounded-2xl shadow-lg overflow-hidden">
-      <table class="w-full text-left border-collapse">
-        <thead class="bg-gray-700 text-gray-300">
-          <tr>
-            <th class="p-4">URL</th>
-            <th class="p-4">Email</th>
-            <th class="p-4">Coin</th>
-            <th class="p-4">Trạng thái</th>
-            <th class="p-4">Lần kiểm tra</th>
-            <th class="p-4">Đang theo dõi</th>
-            <th class="p-4">Xóa</th>
-          </tr>
-        </thead>
-        <tbody id="statusTable" class="divide-y divide-gray-700"></tbody>
-      </table>
-    </div>
+  <!-- Header -->
+  <div class="flex justify-between items-center mb-6">
+    <h2 class="text-3xl font-bold">Theo dõi link</h2>
+    <button id="themeToggle" class="p-2 rounded-full bg-gray-200 dark:bg-gray-700 hover:scale-110 transition">
+      ☀️
+    </button>
+  </div>
+
+  <!-- Input -->
+  <div class="mb-6 space-y-3">
+    <input type="email" id="email" placeholder="Nhập email nhận thông báo"
+      class="w-full p-3 rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 focus:ring focus:ring-indigo-500">
+    <textarea id="urls" placeholder="Nhập mỗi link 1 dòng"
+      class="w-full p-3 rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 h-28 focus:ring focus:ring-indigo-500"></textarea>
+    <button onclick="addLinks()"
+      class="px-6 py-3 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg font-medium shadow-md flex items-center gap-2">
+      ➕ Thêm link
+    </button>
+  </div>
+
+  <!-- Table -->
+  <div class="overflow-x-auto bg-white dark:bg-gray-800 rounded-xl shadow-md">
+    <table class="min-w-full text-sm text-left border-collapse">
+      <thead class="bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200">
+        <tr>
+          <th class="p-3">URL</th>
+          <th class="p-3">Email</th>
+          <th class="p-3">Coin</th>
+          <th class="p-3">Trạng thái</th>
+          <th class="p-3">Lần kiểm tra</th>
+          <th class="p-3">Đang theo dõi</th>
+          <th class="p-3">Xóa</th>
+        </tr>
+      </thead>
+      <tbody id="statusTable" class="divide-y divide-gray-200 dark:divide-gray-700"></tbody>
+    </table>
   </div>
 
 <script>
-const API_URL = 'https://check-end-coin-production.up.railway.app'
+const API_URL = 'https://check-end-coin-production.up.railway.app';
+
+// Badge trạng thái
+function renderStatusBadge(status) {
+  let base = "px-3 py-1 rounded-full text-xs font-semibold";
+  switch (status) {
+    case "Đang diễn ra":
+      return `<span class="${base} bg-green-500 text-white">Đang diễn ra</span>`;
+    case "Đã kết thúc":
+      return `<span class="${base} bg-red-500 text-white">Đã kết thúc</span>`;
+    case "Đang tính toán":
+      return `<span class="${base} bg-yellow-500 text-gray-900">Đang tính toán</span>`;
+    case "Không lấy được":
+      return `<span class="${base} bg-gray-500 text-white animate-pulse">Không lấy được</span>`;
+    default:
+      return `<span class="${base} bg-gray-300 dark:bg-gray-600 text-gray-800 dark:text-gray-200">-</span>`;
+  }
+}
 
 async function addLinks(){
   const email = document.getElementById('email').value.trim();
@@ -82,31 +97,18 @@ async function fetchStatus(){
     const tbody = document.getElementById("statusTable");
     tbody.innerHTML = "";
     data.forEach(link=>{
-      const row = `
-<tr class="hover:bg-gray-700/40 transition">
-  <td class="p-4">${link.url}</td>
-  <td class="p-4">
-    ${link.emails.map(e=>`<div class="flex items-center gap-2"><span>${e}</span></div>`).join("")}
-    <button class="mt-1 px-2 py-1 bg-green-600 hover:bg-green-500 rounded flex items-center gap-1 text-sm" onclick="promptAddEmail('${link.url}')">
-      <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
-      </svg> Thêm
-    </button>
-  </td>
-  <td class="p-4">${link.coin||""}</td>
-  <td class="p-4">${link.status||""}</td>
-  <td class="p-4">${link.lastChecked? new Date(new Date(link.lastChecked).getTime() + 7 * 60 * 60 * 1000).toLocaleString('vi-VN'):""}</td>
-  <td class="p-4">${link.active? 
-      `<span class="flex items-center gap-1 text-green-400 font-semibold"><svg xmlns='http://www.w3.org/2000/svg' class='h-5 w-5' fill='none' viewBox='0 0 24 24' stroke='currentColor'><path stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M5 13l4 4L19 7'/></svg> Hoạt động</span>` :
-      `<span class="flex items-center gap-1 text-red-400 font-semibold"><svg xmlns='http://www.w3.org/2000/svg' class='h-5 w-5' fill='none' viewBox='0 0 24 24' stroke='currentColor'><path stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M6 18L18 6M6 6l12 12'/></svg> Ngừng</span>`}
-  </td>
-  <td class="p-4">
-    <button class="px-3 py-1 bg-red-600 hover:bg-red-500 rounded flex items-center gap-1" onclick="removeLink('${link.url}')">
-      <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
-      </svg> Xóa
-    </button>
-  </td>
+      const row = `<tr class="hover:bg-gray-100 dark:hover:bg-gray-700">
+<td class="p-3">${link.url}</td>
+<td class="p-3">${link.emails.map(e=>`<div class="flex items-center gap-2">${e}</div>`).join("")}
+  <button class="ml-2 px-2 py-1 bg-green-500 text-white rounded-lg text-xs hover:bg-green-600" onclick="promptAddEmail('${link.url}')">➕</button>
+</td>
+<td class="p-3">${link.coin||""}</td>
+<td class="p-3">${renderStatusBadge(link.status)}</td>
+<td class="p-3">${link.lastChecked? new Date(new Date(link.lastChecked).getTime() + 7 * 60 * 60 * 1000).toLocaleString('vi-VN'):""}</td>
+<td class="p-3">${link.active?"✅":"❌"}</td>
+<td class="p-3">
+  <button class="px-2 py-1 bg-red-500 text-white rounded-lg text-xs hover:bg-red-600" onclick="removeLink('${link.url}')">❌</button>
+</td>
 </tr>`;
       tbody.innerHTML+=row;
     });
@@ -115,6 +117,26 @@ async function fetchStatus(){
 
 setInterval(fetchStatus,5000);
 fetchStatus();
+
+// Theme toggle
+const themeToggle = document.getElementById("themeToggle");
+if (localStorage.theme === "light") {
+  document.documentElement.classList.remove("dark");
+  themeToggle.textContent = "🌙";
+} else {
+  themeToggle.textContent = "☀️";
+}
+
+themeToggle.addEventListener("click", () => {
+  document.documentElement.classList.toggle("dark");
+  if (document.documentElement.classList.contains("dark")) {
+    localStorage.theme = "dark";
+    themeToggle.textContent = "☀️";
+  } else {
+    localStorage.theme = "light";
+    themeToggle.textContent = "🌙";
+  }
+});
 </script>
 </body>
 </html>

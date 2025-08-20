@@ -4,6 +4,7 @@
   <meta charset="UTF-8">
   <title>Theo dõi link</title>
   <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/lucide-icons@latest/dist/umd/lucide.js"></script>
   <script>
     tailwind.config = { darkMode: 'class' }
   </script>
@@ -24,12 +25,12 @@
       <!-- Input -->
       <div class="space-y-3 mb-6">
         <input type="email" id="email" placeholder="Nhập email nhận thông báo"
-          class="w-full border rounded-lg px-3 py-3 focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:bg-gray-900 dark:border-gray-600" />
+          class="w-full border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:bg-gray-900 dark:border-gray-600" />
         <textarea id="urls" placeholder="Nhập mỗi link 1 dòng"
-          class="w-full border rounded-lg px-3 py-3 h-28 focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:bg-gray-900 dark:border-gray-600"></textarea>
+          class="w-full border rounded-lg px-3 py-2 h-24 focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:bg-gray-900 dark:border-gray-600"></textarea>
         <button onclick="addLinks()"
-          class="w-full bg-gradient-to-r from-indigo-600 to-purple-600 text-white py-3 px-4 rounded-lg hover:from-indigo-700 hover:to-purple-700 transition font-semibold shadow-lg">
-          ➕ Thêm link
+          class="w-full bg-gradient-to-r from-indigo-600 to-purple-600 text-white py-2.5 px-4 rounded-lg hover:from-indigo-700 hover:to-purple-700 transition font-medium shadow-md flex items-center justify-center gap-2">
+          <i data-lucide="plus-circle" class="w-5 h-5"></i> Thêm link
         </button>
       </div>
 
@@ -38,13 +39,13 @@
         <table class="w-full text-left border-collapse">
           <thead>
             <tr class="bg-gradient-to-r from-indigo-600 to-purple-600 text-white">
-              <th class="px-6 py-4">URL</th>
-              <th class="px-6 py-4">Email</th>
-              <th class="px-6 py-4">Coin</th>
-              <th class="px-6 py-4">Trạng thái</th>
-              <th class="px-6 py-4">Lần kiểm tra</th>
-              <th class="px-6 py-4">Theo dõi</th>
-              <th class="px-6 py-4">Xóa</th>
+              <th class="px-5 py-3">URL</th>
+              <th class="px-5 py-3">Email</th>
+              <th class="px-5 py-3">Coin</th>
+              <th class="px-5 py-3">Trạng thái</th>
+              <th class="px-5 py-3">Lần kiểm tra</th>
+              <th class="px-5 py-3">Theo dõi</th>
+              <th class="px-5 py-3">Xóa</th>
             </tr>
           </thead>
           <tbody id="statusTable" class="divide-y divide-gray-200 dark:divide-gray-700 bg-white dark:bg-gray-900"></tbody>
@@ -90,21 +91,31 @@ async function fetchStatus(){
     tbody.innerHTML = "";
     data.forEach(link=>{
       const row = `<tr class="hover:bg-gray-50 dark:hover:bg-gray-800 transition">
-<td class="px-6 py-3 break-all">${link.url}</td>
-<td class="px-6 py-3">
+<td class="px-5 py-3 break-all">${link.url}</td>
+<td class="px-5 py-3">
   ${link.emails.map(e=>`<div class="text-sm">${e}</div>`).join("")}
-  <button class="mt-2 text-xs bg-green-500 text-white px-2 py-1 rounded hover:bg-green-600" onclick="promptAddEmail('${link.url}')">Thêm ➕</button>
+  <button class="mt-2 text-xs bg-green-500 text-white px-2.5 py-1 rounded flex items-center gap-1 hover:bg-green-600" onclick="promptAddEmail('${link.url}')">
+    <i data-lucide="plus" class="w-3.5 h-3.5"></i> Thêm
+  </button>
 </td>
-<td class="px-6 py-3">${link.coin||""}</td>
-<td class="px-6 py-3">${link.status||""}</td>
-<td class="px-6 py-3">${link.lastChecked? new Date(new Date(link.lastChecked).getTime() + 7*60*60*1000).toLocaleString('vi-VN'):""}</td>
-<td class="px-6 py-3">${link.active?"<span class='text-green-600 font-bold'>✅</span>":"<span class='text-red-600 font-bold'>❌</span>"}</td>
-<td class="px-6 py-3">
-  <button class="bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600" onclick="removeLink('${link.url}')">Xóa</button>
+<td class="px-5 py-3">${link.coin||""}</td>
+<td class="px-5 py-3">${link.status||""}</td>
+<td class="px-5 py-3">${link.lastChecked? new Date(new Date(link.lastChecked).getTime() + 7*60*60*1000).toLocaleString('vi-VN'):""}</td>
+<td class="px-5 py-3">
+  ${link.active
+    ? "<span class='inline-flex items-center gap-1 text-green-600 font-medium'><i data-lucide='check-circle' class='w-4 h-4'></i> Hoạt động</span>"
+    : "<span class='inline-flex items-center gap-1 text-red-600 font-medium'><i data-lucide='x-circle' class='w-4 h-4'></i> Ngưng</span>"
+  }
+</td>
+<td class="px-5 py-3">
+  <button class="bg-red-500 text-white px-2.5 py-1 rounded flex items-center gap-1 hover:bg-red-600" onclick="removeLink('${link.url}')">
+    <i data-lucide="trash-2" class="w-4 h-4"></i> Xóa
+  </button>
 </td>
 </tr>`;
       tbody.innerHTML+=row;
     });
+    lucide.createIcons(); // render icon sau khi thêm
   }catch(e){console.error(e);}
 }
 
@@ -127,7 +138,6 @@ toggleBtn.addEventListener("click",()=>{
   localStorage.setItem("theme", isDark ? "dark" : "light");
   applyTheme(isDark ? "dark" : "light");
 });
-// load theme ban đầu
 applyTheme(localStorage.getItem("theme") || "light");
 </script>
 </body>

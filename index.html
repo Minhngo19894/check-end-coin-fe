@@ -105,7 +105,7 @@ async function fetchStatus(){
   </td>
   <td class="p-4">${link.coin||""}</td>
   <td class="p-4">${link.status||""}</td>
-  <td class="p-4">${link.lastChecked? new Date(new Date(link.lastChecked).getTime() + 7 * 60 * 60 * 1000).toLocaleString('vi-VN'):""}</td>
+  <td class="p-4">${link.lastChecked? link.lastChecked:""}</td>
   <td class="p-4">${link.active? 
       `<span class="flex items-center gap-1 text-green-400 font-semibold"><svg xmlns='http://www.w3.org/2000/svg' class='h-5 w-5' fill='none' viewBox='0 0 24 24' stroke='currentColor'><path stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M5 13l4 4L19 7'/></svg> Hoạt động</span>` :
       `<span class="flex items-center gap-1 text-red-400 font-semibold"><svg xmlns='http://www.w3.org/2000/svg' class='h-5 w-5' fill='none' viewBox='0 0 24 24' stroke='currentColor'><path stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M6 18L18 6M6 6l12 12'/></svg> Ngừng</span>`}
